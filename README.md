@@ -24,5 +24,3 @@ VITE_API_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ```bash
 npm run dev
 ```
-
-打开 http://127.0.0.1:5173/ 就可以跟 AI 聊天了！
