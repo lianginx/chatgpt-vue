@@ -56,8 +56,9 @@ watch(messageList.value, () => nextTick(() => {
       <input v-model="messageContent" @keydown.enter="sendChatMessage(messageContent, messageList)"
         class="px-4 py-2 text-gray-700 bg-white border rounded-md mr-2 sm:mr-4 focus:border-blue-400  focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40 flex-grow"
         type="text" placeholder="请输入">
-      <button @click="sendChatMessage(messageContent, messageList)"
-        class="px-4 py-2 text-sm font-medium tracking-wide text-white capitalize transition-colors duration-300 transform bg-blue-700 rounded-md hover:bg-blue-600 focus:outline-none focus:bg-blue-600 whitespace-nowrap">发送</button>
+      <button :disabled="!messageList[messageList.length - 1].content"
+        @click="sendChatMessage(messageContent, messageList)"
+        class="px-4 py-2 text-sm font-medium tracking-wide text-white capitalize transition-colors duration-300 transform bg-blue-700 rounded-md hover:bg-blue-600 focus:outline-none focus:bg-blue-600 whitespace-nowrap disabled:bg-blue-300">发送</button>
     </div>
   </div>
 </template>
