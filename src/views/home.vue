@@ -31,9 +31,8 @@ async function sendChatMessage(content: string, messageList: ChatMessage[]) {
     </div>
     <div class="mb-6" v-for="item of messageList">
       <div class="font-bold pb-2">{{ roleAlias[item.role] }}：</div>
-      <pre class="text-gray-800">{{ item.content.replace(/^\n\n/, "") }}</pre>
+      <pre class="text-gray-800 whitespace-pre-wrap">{{ item.content.replace(/^\n\n/, "") }}</pre>
     </div>
-    <div id="bottom"></div>
   </div>
   <div class="fixed flex bottom-0 w-full p-6 pb-12 bg-gray-100">
     <input v-model="messageContent" @keydown.enter="sendChatMessage(messageContent, messageList)"
