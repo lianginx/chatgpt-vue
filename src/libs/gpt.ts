@@ -1,5 +1,5 @@
 import type { ChatMessage } from "@/types";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 
 const model = "gpt-3.5-turbo";
 const apiKey = import.meta.env.VITE_API_KEY;
@@ -21,7 +21,7 @@ export async function chat(messageList: ChatMessage[]) {
       status: "success",
       data: completion.data.choices[0].message,
     };
-  } catch (error) {
-    return { status: "error", message: error };
+  } catch (error: any) {
+    return { status: "error", message: error.response.data.error.message };
   }
 }
