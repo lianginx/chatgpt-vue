@@ -13,7 +13,11 @@
 ```bash
 npm i
 npm run dev
-# or
+```
+
+或者
+
+```bash
 yarn
 yarn dev
 ```
