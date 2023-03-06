@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { ChatMessage } from "@/types";
 import { ref, watch, nextTick, onMounted } from "vue";
+import { RouterLink } from "vue-router";
 import { chat } from "@/libs/gpt";
 import Loding from "@/components/Loding.vue";
 
@@ -102,7 +103,9 @@ watch(messageList.value, () => nextTick(() => scrollToBottom()));
     <div
       class="flex flex-nowrap fixed w-full items-baseline top-0 px-6 py-4 bg-gray-100"
     >
-      <div class="text-2xl font-bold"><a href="/">ChatGPT</a></div>
+      <div class="text-2xl font-bold">
+        <RouterLink to="/">ChatGPT</RouterLink>
+      </div>
       <div class="ml-4 text-sm text-gray-500">
         基于 OpenAI 的 ChatGPT 自然语言模型人工智能对话
       </div>
