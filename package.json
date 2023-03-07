@@ -8,8 +8,8 @@
     "preview": "vite preview --port 4173",
     "build-only": "vite build",
     "type-check": "vue-tsc --noEmit",
-    "e:dev": "npm run build && cp -r electron/. dist && cd dist && && yarn && yarn dev",
-    "e:build": "npm run build && cp -r electron/. dist && cd dist && yarn && yarn build"
+    "e:dev": "yarn build && cp -r electron/. dist && cd dist && yarn && yarn dev",
+    "e:build": "yarn build && cp -r electron/. dist && cd dist && yarn && yarn build"
   },
   "dependencies": {
     "axios": "^1.3.4",
