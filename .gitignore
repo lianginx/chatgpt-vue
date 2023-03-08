@@ -5,3 +5,4 @@ package-lock.json
 dist
 electron-dist
 yarn.lock
+yarn-error.log

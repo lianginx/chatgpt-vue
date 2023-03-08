@@ -5,22 +5,14 @@ import { RouterLink } from "vue-router";
 import { chat } from "@/libs/gpt";
 import Loding from "@/components/Loding.vue";
 
-let isConfig = ref<boolean>(true);
-const chatListDom = ref<HTMLDivElement>();
+let isConfig = ref(true);
 let messageContent = ref("");
-const roleAlias = { user: "ME", assistant: "ChatGPT" };
+const chatListDom = ref<HTMLDivElement>();
+const roleAlias = { user: "ME", assistant: "ChatGPT", system: "功能提示" };
 const messageList = ref<ChatMessage[]>([
   {
-    role: "assistant",
-    content: `你好，我是AI语言模型，我可以提供一些常用服务和信息，例如：
-
-1. 翻译：我可以把中文翻译成英文，英文翻译成中文，还有其他一些语言翻译，比如法语、日语、西班牙语等。
-
-2. 咨询服务：如果你有任何问题需要咨询，例如健康、法律、投资等方面，我可以尽可能为你提供帮助。
-
-3. 闲聊：如果你感到寂寞或无聊，我们可以聊一些有趣的话题，以减轻你的压力。
-
-请告诉我你需要哪方面的帮助，我会根据你的需求给你提供相应的信息和建议。`,
+    role: "system",
+    content: `你是一个聊天机器人，喜欢说一些毫无逻辑的长篇大论：`,
   },
 ]);
 
@@ -30,6 +22,40 @@ onMounted(() => {
     switchConfigStatus();
   }
 });
+
+async function sendChatMessage() {
+  messageList.value.push(messageList.value[0], {
+    role: "user",
+    content: messageContent.value,
+  });
+  clearMessageContent();
+
+  const { status, data, message } = await chat(messageList.value, loadConfig());
+
+  messageList.value.push({
+    role: "assistant",
+    content: "",
+  });
+  const reader = data?.getReader();
+  if (reader) {
+    const decoder = new TextDecoder("utf-8");
+    const readStream = () => {
+      reader.read().then(({ done, value }) => {
+        if (done) {
+          reader.closed;
+          return;
+        }
+        const data = decoder.decode(value).match(/(?<=data: )\s*({.*?}]})/g);
+        data?.forEach((v: any) => {
+          messageList.value[messageList.value.length - 1].content +=
+            JSON.parse(v).choices[0].delta.content ?? "";
+        });
+        readStream();
+      });
+    };
+    readStream();
+  }
+}
 
 function sendOrSave() {
   if (!messageContent.value.length) return;
@@ -50,23 +76,6 @@ function clickConfig() {
     clearMessageContent();
   }
   switchConfigStatus();
-}
-
-async function sendChatMessage() {
-  if (messageList.value.length === 1) {
-    messageList.value.pop(); // 移除开场白
-  }
-
-  messageList.value.push(
-    { role: "user", content: messageContent.value },
-    { role: "assistant", content: "" }
-  );
-  clearMessageContent();
-
-  const { status, data, message } = await chat(messageList.value, loadConfig());
-
-  messageList.value[messageList.value.length - 1].content =
-    status === "success" ? data.content : message;
 }
 
 function saveConfig(apiKey: string) {
@@ -116,7 +125,10 @@ watch(messageList.value, () => nextTick(() => scrollToBottom()));
 
     <div class="flex-1 mt-16">
       <div class="m-6" ref="chatListDom">
-        <div class="mb-6" v-for="item of messageList">
+        <div
+          class="mb-6"
+          v-for="item of messageList.filter((v) => v.role !== 'system')"
+        >
           <div class="font-bold mb-3">{{ roleAlias[item.role] }}：</div>
           <pre
             class="text-sm text-slate-600 whitespace-pre-wrap leading-relaxed"
