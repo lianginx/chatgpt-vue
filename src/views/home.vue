@@ -8,6 +8,7 @@ let isConfig = ref(true);
 let isTalking = ref(false);
 let messageContent = ref("");
 const chatListDom = ref<HTMLDivElement>();
+const inputDom = ref<HTMLInputElement>();
 const decoder = new TextDecoder("utf-8");
 const roleAlias = { user: "ME", assistant: "ChatGPT", system: "功能提示" };
 const messageList = ref<ChatMessage[]>([
@@ -41,9 +42,9 @@ const sendChatMessage = async (content: string = messageContent.value) => {
     isTalking.value = true;
   }
 
-  messageList.value.push({ role: "user", content });
+  messageList.value.push({ role: "user", content: content.trim() });
   clearMessageContent();
-  
+
   messageList.value.push({ role: "assistant", content: "" });
   const { status, data, message } = await chat(messageList.value, loadConfig());
 
@@ -115,6 +116,12 @@ const scrollToBottom = () => {
 };
 
 watch(messageList.value, () => nextTick(() => scrollToBottom()));
+watch(messageContent, () =>
+  nextTick(() => {
+    if (!inputDom.value) return;
+    inputDom.value.style.height = inputDom.value?.scrollHeight + "px";
+  })
+);
 </script>
 
 <template>
@@ -149,13 +156,14 @@ watch(messageList.value, () => nextTick(() => scrollToBottom()));
     </div>
 
     <div class="sticky bottom-0 w-full p-6 pb-8 bg-gray-100">
-      <div class="-mt-2 mb-2 text-sm text-gray-500" v-if="isConfig">
+      <div class="-mt-2 mb-2 text-sm text-gray-500" v-show="isConfig">
         请输入 API Key：
       </div>
-      <div class="flex">
-        <input
-          class="input"
+      <div class="flex items-baseline overflow-y-hidden">
+        <textarea
+          class="input resize-none h-10 min-h-min overflow-hidden"
           type="text"
+          ref="inputDom"
           :placeholder="isConfig ? 'sk-xxxxxxxxxx' : '请输入'"
           v-model="messageContent"
           @keydown.enter="sendOrSave()"
