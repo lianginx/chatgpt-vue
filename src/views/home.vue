@@ -54,7 +54,7 @@ const sendChatMessage = async (content: string = messageContent.value) => {
   } else {
     appendLastMessageContent(message);
   }
-  
+
   isTalking.value = false;
 };
 
@@ -157,10 +157,10 @@ watch(messageList.value, () => nextTick(() => scrollToBottom()));
       <div class="flex">
         <input
           class="input"
-          type="text"
+          :type="isConfig ? 'password' : 'text'"
           :placeholder="isConfig ? 'sk-xxxxxxxxxx' : '请输入'"
           v-model="messageContent"
-          @keydown.enter="sendOrSave()"
+          @keydown.enter="isTalking || sendOrSave()"
         />
         <button class="btn" :disabled="isTalking" @click="sendOrSave()">
           {{ isConfig ? "保存" : "发送" }}
