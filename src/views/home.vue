@@ -1,63 +1,79 @@
 <script setup lang="ts">
 import type { ChatMessage } from "@/types";
 import { ref, watch, nextTick, onMounted } from "vue";
-import { RouterLink } from "vue-router";
 import { chat } from "@/libs/gpt";
 import Loding from "@/components/Loding.vue";
 
 let isConfig = ref(true);
+let isTalking = ref(false);
 let messageContent = ref("");
 const chatListDom = ref<HTMLDivElement>();
+const decoder = new TextDecoder("utf-8");
 const roleAlias = { user: "ME", assistant: "ChatGPT", system: "功能提示" };
 const messageList = ref<ChatMessage[]>([
   {
     role: "system",
-    content: `你是一个聊天机器人，喜欢说一些毫无逻辑的长篇大论：`,
+    content: "你是 ChatGPT，一个 AI 语言模型。",
+  },
+  {
+    role: "assistant",
+    content: `你好，我是AI语言模型，我可以提供一些常用服务和信息，例如：
+
+1. 翻译：我可以把中文翻译成英文，英文翻译成中文，还有其他一些语言翻译，比如法语、日语、西班牙语等。
+
+2. 咨询服务：如果你有任何问题需要咨询，例如健康、法律、投资等方面，我可以尽可能为你提供帮助。
+
+3. 闲聊：如果你感到寂寞或无聊，我们可以聊一些有趣的话题，以减轻你的压力。
+
+请告诉我你需要哪方面的帮助，我会根据你的需求给你提供相应的信息和建议。`,
   },
 ]);
 
 onMounted(() => {
-  const apiKey = loadConfig();
-  if (apiKey) {
+  if (loadConfig()) {
     switchConfigStatus();
   }
 });
 
-async function sendChatMessage() {
-  messageList.value.push(messageList.value[0], {
-    role: "user",
-    content: messageContent.value,
-  });
-  clearMessageContent();
+const sendChatMessage = async (content: string = messageContent.value) => {
+  if (messageList.value.length === 2) {
+    messageList.value.pop();
+    isTalking.value = true;
+  }
 
+  messageList.value.push({ role: "user", content });
+  clearMessageContent();
+  
+  messageList.value.push({ role: "assistant", content: "" });
   const { status, data, message } = await chat(messageList.value, loadConfig());
 
-  messageList.value.push({
-    role: "assistant",
-    content: "",
-  });
-  const reader = data?.getReader();
-  if (reader) {
-    const decoder = new TextDecoder("utf-8");
-    const readStream = () => {
-      reader.read().then(({ done, value }) => {
-        if (done) {
-          reader.closed;
-          return;
-        }
-        const data = decoder.decode(value).match(/(?<=data: )\s*({.*?}]})/g);
-        data?.forEach((v: any) => {
-          messageList.value[messageList.value.length - 1].content +=
-            JSON.parse(v).choices[0].delta.content ?? "";
-        });
-        readStream();
-      });
-    };
-    readStream();
+  if (status === "success" && data) {
+    const reader = data.getReader();
+    await readStream(reader);
+  } else {
+    appendLastMessageContent(message);
   }
-}
+};
 
-function sendOrSave() {
+const readStream = async (reader: ReadableStreamDefaultReader<Uint8Array>) => {
+  const { done, value } = await reader.read();
+  if (done) {
+    reader.closed;
+    isTalking.value = false;
+    return;
+  }
+  const dataList = decoder.decode(value).match(/(?<=data: )\s*({.*?}]})/g);
+  dataList?.forEach((v: any) => {
+    const json = JSON.parse(v);
+    appendLastMessageContent(json.choices[0].delta.content ?? "");
+  });
+  readStream(reader);
+};
+
+const appendLastMessageContent = (content: string) =>
+  (messageList.value[messageList.value.length - 1].content += content);
+
+const sendOrSave = () => {
   if (!messageContent.value.length) return;
   if (isConfig.value) {
     if (saveConfig(messageContent.value.trim())) {
@@ -67,42 +83,36 @@ function sendOrSave() {
   } else {
     sendChatMessage();
   }
-}
+};
 
-function clickConfig() {
+const clickConfig = () => {
   if (!isConfig.value) {
     messageContent.value = loadConfig();
   } else {
     clearMessageContent();
   }
   switchConfigStatus();
-}
+};
 
-function saveConfig(apiKey: string) {
+const saveConfig = (apiKey: string) => {
   if (apiKey.slice(0, 3) !== "sk-" || apiKey.length !== 51) {
     alert("API Key 错误，请检查后重新输入！");
     return false;
   }
   localStorage.setItem("apiKey", apiKey);
   return true;
-}
+};
 
-function loadConfig() {
-  return localStorage.getItem("apiKey") ?? "";
-}
+const loadConfig = () => localStorage.getItem("apiKey") ?? "";
 
-function scrollToBottom() {
+const switchConfigStatus = () => (isConfig.value = !isConfig.value);
+
+const clearMessageContent = () => (messageContent.value = "");
+
+const scrollToBottom = () => {
   if (!chatListDom.value) return;
   scrollTo(0, chatListDom.value.scrollHeight);
-}
-
-function switchConfigStatus() {
-  isConfig.value = !isConfig.value;
-}
-
-function clearMessageContent() {
-  messageContent.value = "";
-}
+};
 
 watch(messageList.value, () => nextTick(() => scrollToBottom()));
 </script>
@@ -112,9 +122,7 @@ watch(messageList.value, () => nextTick(() => scrollToBottom()));
     <div
       class="flex flex-nowrap fixed w-full items-baseline top-0 px-6 py-4 bg-gray-100"
     >
-      <div class="text-2xl font-bold">
-        <RouterLink to="/">ChatGPT</RouterLink>
-      </div>
+      <div class="text-2xl font-bold">ChatGPT</div>
       <div class="ml-4 text-sm text-gray-500">
         基于 OpenAI 的 ChatGPT 自然语言模型人工智能对话
       </div>
@@ -152,11 +160,7 @@ watch(messageList.value, () => nextTick(() => scrollToBottom()));
           v-model="messageContent"
           @keydown.enter="sendOrSave()"
         />
-        <button
-          class="btn"
-          :disabled="!messageList[messageList.length - 1].content"
-          @click="sendOrSave()"
-        >
+        <button class="btn" :disabled="isTalking" @click="sendOrSave()">
           {{ isConfig ? "保存" : "发送" }}
         </button>
       </div>
