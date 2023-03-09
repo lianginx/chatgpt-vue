@@ -36,14 +36,15 @@ onMounted(() => {
 });
 
 const sendChatMessage = async (content: string = messageContent.value) => {
+  isTalking.value = true;
+
   if (messageList.value.length === 2) {
     messageList.value.pop();
-    isTalking.value = true;
   }
 
   messageList.value.push({ role: "user", content });
   clearMessageContent();
-  
+
   messageList.value.push({ role: "assistant", content: "" });
   const { status, data, message } = await chat(messageList.value, loadConfig());
 
@@ -53,13 +54,14 @@ const sendChatMessage = async (content: string = messageContent.value) => {
   } else {
     appendLastMessageContent(message);
   }
+  
+  isTalking.value = false;
 };
 
 const readStream = async (reader: ReadableStreamDefaultReader<Uint8Array>) => {
   const { done, value } = await reader.read();
   if (done) {
     reader.closed;
-    isTalking.value = false;
     return;
   }
   const dataList = decoder.decode(value).match(/(?<=data: )\s*({.*?}]})/g);
@@ -67,7 +69,7 @@ const readStream = async (reader: ReadableStreamDefaultReader<Uint8Array>) => {
     const json = JSON.parse(v);
     appendLastMessageContent(json.choices[0].delta.content ?? "");
   });
-  readStream(reader);
+  await readStream(reader);
 };
 
 const appendLastMessageContent = (content: string) =>
