@@ -9,11 +9,11 @@ let isTalking = ref(false);
 let messageContent = ref("");
 const chatListDom = ref<HTMLDivElement>();
 const decoder = new TextDecoder("utf-8");
-const roleAlias = { user: "ME", assistant: "ChatGPT", system: "功能提示" };
+const roleAlias = { user: "ME", assistant: "ChatGPT", system: "System" };
 const messageList = ref<ChatMessage[]>([
   {
     role: "system",
-    content: "你是 ChatGPT，一个 AI 语言模型。",
+    content: "你是 ChatGPT，OpenAI 训练的大型语言模型，尽可能简洁地回答。",
   },
   {
     role: "assistant",
