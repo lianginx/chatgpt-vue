@@ -7,25 +7,28 @@ axios.defaults.headers.post["Content-Type"] = "application/json";
 
 export async function chat(messageList: ChatMessage[], apiKey: string) {
   try {
-    const completion = await axios({
-      url: "https://api.openai.com/v1/chat/completions",
+    const result = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "post",
       headers: {
+        "Content-Type": "application/json",
         Authorization: `Bearer ${apiKey}`,
       },
-      data: {
+      body: JSON.stringify({
         model,
+        stream: true,
         messages: messageList,
-      },
+      }),
     });
+
     return {
       status: "success",
-      data: completion.data.choices[0].message,
+      data: result.body,
     };
   } catch (error: any) {
+    console.log(error);
     return {
       status: "error",
-      message: error.response.data.error.message,
+      message: error,
     };
   }
 }
