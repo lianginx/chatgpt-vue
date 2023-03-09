@@ -6,6 +6,8 @@
 
 ## 快速开始
 
+**注意：项目没有使用任何代理，API 在前端直接调用，能否连通基于你本机的网络情况！**
+
 在开始之前，请确保您已正确安装 Node.js 运行时环境。如果您还没有安装 Node.js，请 [点击这里下载](https://nodejs.org/zh-cn/)。
 
 使用 ChatGPT 需要先申请 API Key，已注册但还没有 API Key 的用户可以 [前往这里生成](https://platform.openai.com/account/api-keys)。
