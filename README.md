@@ -42,3 +42,7 @@ VITE v3.2.5  ready in 294 ms
 如果你想要打包在本地运行，[查看这里](/docs/electron-packaging-guide.md)。
 
 希望这能对您有所帮助。如果您还有其他问题，请随时在评论区提出，谢谢！
+
+## 许可证
+
+本项目使用 MIT 协议
