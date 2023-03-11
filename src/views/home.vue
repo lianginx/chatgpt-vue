@@ -2,9 +2,11 @@
 import type { ChatMessage } from "@/types";
 import { ref, watch, nextTick, onMounted } from "vue";
 import { chat } from "@/libs/gpt";
+import cryptoJS from "crypto-js";
 import Loding from "@/components/Loding.vue";
 import Copy from "@/components/Copy.vue";
 
+let apiKey = "";
 let isConfig = ref(true);
 let isTalking = ref(false);
 let messageContent = ref("");
@@ -31,7 +33,7 @@ const messageList = ref<ChatMessage[]>([
 ]);
 
 onMounted(() => {
-  if (loadConfig()) {
+  if (getAPIKey()) {
     switchConfigStatus();
   }
 });
@@ -47,7 +49,7 @@ const sendChatMessage = async (content: string = messageContent.value) => {
   clearMessageContent();
 
   messageList.value.push({ role: "assistant", content: "" });
-  const { status, data, message } = await chat(messageList.value, loadConfig());
+  const { status, data, message } = await chat(messageList.value, getAPIKey());
 
   if (status === "success" && data) {
     const reader = data.getReader();
@@ -79,7 +81,7 @@ const appendLastMessageContent = (content: string) =>
 const sendOrSave = () => {
   if (!messageContent.value.length) return;
   if (isConfig.value) {
-    if (saveConfig(messageContent.value.trim())) {
+    if (saveAPIKey(messageContent.value.trim())) {
       switchConfigStatus();
     }
     clearMessageContent();
@@ -90,23 +92,33 @@ const sendOrSave = () => {
 
 const clickConfig = () => {
   if (!isConfig.value) {
-    messageContent.value = loadConfig();
+    messageContent.value = getAPIKey();
   } else {
     clearMessageContent();
   }
   switchConfigStatus();
 };
 
-const saveConfig = (apiKey: string) => {
+const getSecretKey = () => "lianginx";
+
+const saveAPIKey = (apiKey: string) => {
   if (apiKey.slice(0, 3) !== "sk-" || apiKey.length !== 51) {
     alert("API Key 错误，请检查后重新输入！");
     return false;
   }
-  localStorage.setItem("apiKey", apiKey);
+  const aesAPIKey = cryptoJS.AES.encrypt(apiKey, getSecretKey()).toString();
+  localStorage.setItem("apiKey", aesAPIKey);
   return true;
 };
 
-const loadConfig = () => localStorage.getItem("apiKey") ?? "";
+const getAPIKey = () => {
+  if (apiKey) return apiKey;
+  const aesAPIKey = localStorage.getItem("apiKey") ?? "";
+  apiKey = cryptoJS.AES.decrypt(aesAPIKey, getSecretKey()).toString(
+    cryptoJS.enc.Utf8
+  );
+  return apiKey;
+};
 
 const switchConfigStatus = () => (isConfig.value = !isConfig.value);
 
