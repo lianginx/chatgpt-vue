@@ -148,27 +148,30 @@ watch(messageList.value, () => nextTick(() => scrollToBottom()));
       <div class="ml-4 text-sm text-gray-500">
         基于 OpenAI 的 ChatGPT 自然语言模型人工智能对话
       </div>
-      <div class="ml-auto text-sm cursor-pointer" @click="clickConfig()">
+      <div
+        class="ml-auto px-3 py-2 text-sm cursor-pointer hover:bg-white rounded-md"
+        @click="clickConfig()"
+      >
         设置
       </div>
     </div>
 
-    <div class="flex-1 mt-16">
-      <div class="m-6" ref="chatListDom">
-        <div
-          class="flex flex-col mb-3 group"
-          v-for="item of messageList.filter((v) => v.role !== 'system')"
-        >
+    <div class="flex-1 mx-2 mt-20 mb-2" ref="chatListDom">
+      <div
+        class="group flex flex-col px-4 py-3 hover:bg-slate-100 rounded-lg"
+        v-for="item of messageList.filter((v) => v.role !== 'system')"
+      >
+        <div class="flex justify-between items-center mb-2">
           <div class="font-bold">{{ roleAlias[item.role] }}：</div>
-          <div class="my-3">
-            <pre
-              class="text-sm text-slate-600 whitespace-pre-wrap leading-relaxed"
-              v-if="item.content"
-              >{{ item.content.replace(/^\n\n/, "") }}</pre
-            >
-            <Loding v-else />
-          </div>
           <Copy class="invisible group-hover:visible" :content="item.content" />
+        </div>
+        <div>
+          <pre
+            class="text-sm text-slate-600 whitespace-pre-wrap leading-relaxed"
+            v-if="item.content"
+            >{{ item.content.replace(/^\n\n/, "") }}</pre
+          >
+          <Loding v-else />
         </div>
       </div>
     </div>
