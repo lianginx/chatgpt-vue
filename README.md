@@ -45,4 +45,4 @@ VITE v3.2.5  ready in 294 ms
 
 ## 许可证
 
-本项目使用 MIT 协议
+本项目使用 [MIT](LICENSE) 协议
