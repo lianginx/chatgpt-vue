@@ -39,40 +39,47 @@ onMounted(() => {
 });
 
 const sendChatMessage = async (content: string = messageContent.value) => {
-  isTalking.value = true;
+  try {
+    isTalking.value = true;
+    if (messageList.value.length === 2) {
+      messageList.value.pop();
+    }
+    messageList.value.push({ role: "user", content });
+    clearMessageContent();
+    messageList.value.push({ role: "assistant", content: "" });
 
-  if (messageList.value.length === 2) {
-    messageList.value.pop();
+    const { body, status } = await chat(messageList.value, getAPIKey());
+    if (body) {
+      const reader = body.getReader();
+      await readStream(reader, status);
+    }
+  } catch (error: any) {
+    appendLastMessageContent(error);
+  } finally {
+    isTalking.value = false;
   }
-
-  messageList.value.push({ role: "user", content });
-  clearMessageContent();
-
-  messageList.value.push({ role: "assistant", content: "" });
-  const { status, data, message } = await chat(messageList.value, getAPIKey());
-
-  if (status === "success" && data) {
-    const reader = data.getReader();
-    await readStream(reader);
-  } else {
-    appendLastMessageContent(message);
-  }
-
-  isTalking.value = false;
 };
 
-const readStream = async (reader: ReadableStreamDefaultReader<Uint8Array>) => {
+const readStream = async (
+  reader: ReadableStreamDefaultReader<Uint8Array>,
+  status: number
+) => {
+  const regex = /({.*?]})/g;
   const { done, value } = await reader.read();
   if (done) {
     reader.closed;
     return;
   }
-  const dataList = decoder.decode(value).match(/(?<=data: )\s*({.*?}]})/g);
+  const decodeText = decoder.decode(value);
+  const dataList = status === 200 ? decodeText.match(regex) : [decodeText];
   dataList?.forEach((v: any) => {
     const json = JSON.parse(v);
-    appendLastMessageContent(json.choices[0].delta.content ?? "");
+    console.log(json);
+    const content =
+      status === 200 ? json.choices[0].delta.content ?? "" : json.error.message;
+    appendLastMessageContent(content);
   });
-  await readStream(reader);
+  await readStream(reader, status);
 };
 
 const appendLastMessageContent = (content: string) =>
