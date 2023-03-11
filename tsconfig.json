@@ -6,7 +6,8 @@
     "paths": {
       "@/*": ["./src/*"]
     },
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "lib": ["ESNext", "DOM"]
   },
 
   "references": [
