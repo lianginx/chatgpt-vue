@@ -3,6 +3,7 @@ import type { ChatMessage } from "@/types";
 import { ref, watch, nextTick, onMounted } from "vue";
 import { chat } from "@/libs/gpt";
 import Loding from "@/components/Loding.vue";
+import Copy from "@/components/Copy.vue";
 
 let isConfig = ref(true);
 let isTalking = ref(false);
@@ -136,16 +137,19 @@ watch(messageList.value, () => nextTick(() => scrollToBottom()));
     <div class="flex-1 mt-16">
       <div class="m-6" ref="chatListDom">
         <div
-          class="mb-6"
+          class="flex flex-col mb-3 group"
           v-for="item of messageList.filter((v) => v.role !== 'system')"
         >
-          <div class="font-bold mb-3">{{ roleAlias[item.role] }}：</div>
-          <pre
-            class="text-sm text-slate-600 whitespace-pre-wrap leading-relaxed"
-            v-if="item.content"
-            >{{ item.content.replace(/^\n\n/, "") }}</pre
-          >
-          <Loding v-else />
+          <div class="font-bold">{{ roleAlias[item.role] }}：</div>
+          <div class="my-3">
+            <pre
+              class="text-sm text-slate-600 whitespace-pre-wrap leading-relaxed"
+              v-if="item.content"
+              >{{ item.content.replace(/^\n\n/, "") }}</pre
+            >
+            <Loding v-else />
+          </div>
+          <Copy class="invisible group-hover:visible" :content="item.content" />
         </div>
       </div>
     </div>

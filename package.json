@@ -16,6 +16,7 @@
     "ne:build": "npm run build && cp -r electron/. dist && cd dist && npm run && npm run build"
   },
   "dependencies": {
+    "@icon-park/vue-next": "^1.4.2",
     "axios": "^1.3.4",
     "vue": "^3.2.38",
     "vue-router": "^4.1.5"
