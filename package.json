@@ -12,8 +12,8 @@
     "type-check": "vue-tsc --noEmit",
     "e:dev": "yarn build && cp -r electron/. dist && cd dist && yarn && yarn dev",
     "e:build": "yarn build && cp -r electron/. dist && cd dist && yarn && yarn build",
-    "ne:dev": "npm run build && cp -r electron/. dist && cd dist && npm run && npm run dev",
-    "ne:build": "npm run build && cp -r electron/. dist && cd dist && npm run && npm run build"
+    "ne:dev": "npm run build && cp -r electron/. dist && cd dist && npm i && npm run dev",
+    "ne:build": "npm run build && cp -r electron/. dist && cd dist && npm i && npm run build"
   },
   "dependencies": {
     "@icon-park/vue-next": "^1.4.2",
