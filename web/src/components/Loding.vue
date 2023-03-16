@@ -39,13 +39,13 @@
 }
 
 .loading {
-  width: 17px;
-  height: 17px;
+  width: 18px;
+  height: 18px;
 }
 
 .loading > div {
-  width: 3px;
-  height: 3px;
+  width: 4px;
+  height: 4px;
   margin: 1px;
   border-radius: 100%;
   animation-name: ball-grid-beat;

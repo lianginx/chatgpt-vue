@@ -9,7 +9,7 @@ const btnConfig: {
   fill: string;
   theme: Theme;
 } = {
-  size: 14,
+  size: 15,
   fill: "#999",
   theme: "outline",
 };
@@ -58,9 +58,9 @@ const copyToClipboard = (content: string = porps.content) => {
       :size="btnConfig.size"
       :fill="btnConfig.fill"
     />
-    <span class="text-xs ml-0.5 text-gray-500 leading-none">{{
-      btnTips[btnStatus]
-    }}</span>
+    <div class="text-xs ml-0.5 text-gray-500 leading-none">
+      {{ btnTips[btnStatus] }}
+    </div>
   </div>
 </template>
 

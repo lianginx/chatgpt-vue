@@ -1,11 +1,20 @@
 {
-  "name": "vue3-ts-vite-router-tailwindcss",
+  "name": "chatgpt-vue",
   "version": "0.0.1",
   "author": "LiangINX",
   "main": "index.html",
   "license": "MIT",
   "scripts": {
-    "start": "cd web && yarn start && docker-compose up -d"
+    "dev": "vite",
+    "build": "run-p type-check build-only",
+    "preview": "vite preview --port 4173",
+    "build-only": "vite build",
+    "type-check": "vue-tsc --noEmit",
+    "e:dev": "yarn build && cp -r electron/. dist && cd dist && yarn && yarn dev",
+    "e:build": "yarn build && cp -r electron/. dist && cd dist && yarn && yarn build",
+    "ne:dev": "npm run build && cp -r electron/. dist && cd dist && npm run && npm run dev",
+    "ne:build": "npm run build && cp -r electron/. dist && cd dist && npm run && npm run build",
+    "start": "yarn && yarn build"
   },
   "dependencies": {
     "@icon-park/vue-next": "^1.4.2",

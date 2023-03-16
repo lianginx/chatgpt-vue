@@ -1,0 +1,23 @@
+version: "3"
+name: chatgpt
+services:
+  web:
+    container_name: chatgpt-web
+    image: nginx:latest
+    ports:
+      - 80:80
+    volumes:
+      - ./web/dist:/usr/share/nginx/html
+    restart: unless-stopped # 自动重启
+    depends_on: # 启动依赖
+      - server
+  server:
+    container_name: chatgpt-server
+    image: node:latest
+    ports:
+      - 8000:8000
+    working_dir: /app # 指定容器内的工作目录
+    volumes:
+      - ./server:/app # 把当前宿主机的目录映射到容器内
+    command: yarn dev
+    restart: unless-stopped # 自动重启

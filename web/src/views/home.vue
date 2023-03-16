@@ -1,23 +1,17 @@
 <script setup lang="ts">
 import type { ChatMessage } from "@/types";
 import { ref, watch, nextTick, onMounted } from "vue";
-import { chat } from "@/libs/gpt";
 import cryptoJS from "crypto-js";
-import Loding from "@/components/Loding.vue";
-import Copy from "@/components/Copy.vue";
+
+import Message from "@/components/Message.vue";
+import Reload from "@/components/Reload.vue";
 
 let apiKey = "";
 let isConfig = ref(true);
 let isTalking = ref(false);
 let messageContent = ref("");
 const chatListDom = ref<HTMLDivElement>();
-const decoder = new TextDecoder("utf-8");
-const roleAlias = { user: "ME", assistant: "ChatGPT", system: "System" };
 const messageList = ref<ChatMessage[]>([
-  {
-    role: "system",
-    content: "你是 ChatGPT，OpenAI 训练的大型语言模型，尽可能简洁地回答。",
-  },
   {
     role: "assistant",
     content: `你好，我是AI语言模型，我可以提供一些常用服务和信息，例如：
@@ -38,48 +32,34 @@ onMounted(() => {
   }
 });
 
-const sendChatMessage = async (content: string = messageContent.value) => {
-  try {
-    isTalking.value = true;
-    if (messageList.value.length === 2) {
-      messageList.value.pop();
-    }
-    messageList.value.push({ role: "user", content });
-    clearMessageContent();
-    messageList.value.push({ role: "assistant", content: "" });
-
-    const { body, status } = await chat(messageList.value, getAPIKey());
-    if (body) {
-      const reader = body.getReader();
-      await readStream(reader, status);
-    }
-  } catch (error: any) {
-    appendLastMessageContent(error);
-  } finally {
-    isTalking.value = false;
+const sendChatMessage = (content: string = messageContent.value) => {
+  isTalking.value = true;
+  if (messageList.value.length === 1) {
+    messageList.value.pop();
   }
-};
+  messageList.value.push({ role: "user", content });
+  clearMessageContent();
+  messageList.value.push({ role: "assistant", content: "" });
 
-const readStream = async (
-  reader: ReadableStreamDefaultReader<Uint8Array>,
-  status: number
-) => {
-  const regex = /({.*?]})/g;
-  const { done, value } = await reader.read();
-  if (done) {
-    reader.closed;
-    return;
-  }
-  const decodeText = decoder.decode(value);
-  const dataList = status === 200 ? decodeText.match(regex) : [decodeText];
-  dataList?.forEach((v: any) => {
-    const json = JSON.parse(v);
-    console.log(json);
-    const content =
-      status === 200 ? json.choices[0].delta.content ?? "" : json.error.message;
-    appendLastMessageContent(content);
-  });
-  await readStream(reader, status);
+  fetch("http://localhost:8000/gpt-3.5", {
+    method: "post",
+    body: JSON.stringify({
+      apiKey,
+      messages: messageList.value,
+    }),
+  })
+    .then(async (res) => {
+      const complete = await res.json();
+      appendLastMessageContent(
+        complete.status === "success" ? complete.data.content : complete.message
+      );
+    })
+    .catch((e) => {
+      appendLastMessageContent(e.message);
+    })
+    .finally(() => {
+      isTalking.value = false;
+    });
 };
 
 const appendLastMessageContent = (content: string) =>
@@ -145,7 +125,7 @@ watch(messageList.value, () => nextTick(() => scrollToBottom()));
       class="flex flex-nowrap fixed w-full items-baseline top-0 px-6 py-4 bg-gray-100"
     >
       <div class="text-2xl font-bold">ChatGPT</div>
-      <div class="ml-4 text-sm text-gray-500">
+      <div class="ml-4 text-sm text-gray-500 hidden sm:block">
         基于 OpenAI 的 ChatGPT 自然语言模型人工智能对话
       </div>
       <div
@@ -157,32 +137,26 @@ watch(messageList.value, () => nextTick(() => scrollToBottom()));
     </div>
 
     <div class="flex-1 mx-2 mt-20 mb-2" ref="chatListDom">
-      <div
-        class="group flex flex-col px-4 py-3 hover:bg-slate-100 rounded-lg"
+      <Message
         v-for="item of messageList.filter((v) => v.role !== 'system')"
-      >
-        <div class="flex justify-between items-center mb-2">
-          <div class="font-bold">{{ roleAlias[item.role] }}：</div>
-          <Copy class="invisible group-hover:visible" :content="item.content" />
-        </div>
-        <div>
-          <pre
-            class="text-sm text-slate-600 whitespace-pre-wrap leading-relaxed"
-            v-if="item.content"
-            >{{ item.content.replace(/^\n\n/, "") }}</pre
-          >
-          <Loding v-else />
-        </div>
-      </div>
+        :message="item"
+      />
     </div>
 
     <div class="sticky bottom-0 w-full p-6 pb-8 bg-gray-100">
       <div class="-mt-2 mb-2 text-sm text-gray-500" v-if="isConfig">
         请输入 API Key：
       </div>
-      <div class="flex">
+      <div class="flex items-center">
+        <Reload />
+        <!-- <Refresh
+          class="flex justify-center items-center p-2.5 rounded hover:bg-white cursor-pointer"
+          size="20"
+          fill="#333"
+          @click="reload()"
+        /> -->
         <input
-          class="input"
+          class="input ml-2 mr-4"
           :type="isConfig ? 'password' : 'text'"
           :placeholder="isConfig ? 'sk-xxxxxxxxxx' : '请输入'"
           v-model="messageContent"
@@ -195,13 +169,3 @@ watch(messageList.value, () => nextTick(() => scrollToBottom()));
     </div>
   </div>
 </template>
-
-<style scoped>
-pre {
-  font-family: -apple-system, "Noto Sans", "Helvetica Neue", Helvetica,
-    "Nimbus Sans L", Arial, "Liberation Sans", "PingFang SC", "Hiragino Sans GB",
-    "Noto Sans CJK SC", "Source Han Sans SC", "Source Han Sans CN",
-    "Microsoft YaHei", "Wenquanyi Micro Hei", "WenQuanYi Zen Hei", "ST Heiti",
-    SimHei, "WenQuanYi Zen Hei Sharp", sans-serif;
-}
-</style>
