@@ -5,7 +5,7 @@
   "license": "MIT",
   "scripts": {
     "i": "yarn web:init && yarn server:init",
-    "start": "cd web && yarn start && docker-compose up -d",
+    "start": "yarn web:build && docker-compose up -d",
     "web:dev": "cd web && yarn dev",
     "web:build": "cd web && yarn build",
     "web:init": "cd web && yarn",
