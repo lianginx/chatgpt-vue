@@ -8,7 +8,7 @@ const reload = () => window.location.reload();
   <Refresh
     class="flex justify-center items-center p-2 rounded hover:bg-white cursor-pointer"
     size="24"
-    fill="#333"
+    fill="#666"
     @click="reload()"
   />
 </template>

@@ -149,12 +149,6 @@ watch(messageList.value, () => nextTick(() => scrollToBottom()));
       </div>
       <div class="flex items-center">
         <Reload />
-        <!-- <Refresh
-          class="flex justify-center items-center p-2.5 rounded hover:bg-white cursor-pointer"
-          size="20"
-          fill="#333"
-          @click="reload()"
-        /> -->
         <input
           class="input ml-2 mr-4"
           :type="isConfig ? 'password' : 'text'"
