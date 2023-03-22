@@ -64,22 +64,35 @@ const readStream = async (
   reader: ReadableStreamDefaultReader<Uint8Array>,
   status: number
 ) => {
-  const regex = /({.*?]})/g;
-  const { done, value } = await reader.read();
-  if (done) {
-    reader.closed;
-    return;
+  let partialLine = '';
+
+  while (true) {
+    // eslint-disable-next-line no-await-in-loop
+    const { value, done } = await reader.read();
+    if (done) break;
+
+    const decodedText = decoder.decode(value, { stream: true });
+    console.log("decodedText:" + decodedText);
+
+    const chunk = partialLine + decodedText;
+    const newLines = chunk.split(/\r?\n/);
+
+    partialLine = newLines.pop() ?? '';
+    if(partialLine != '')console.log("partialLine:" + partialLine);
+
+    for (const line of newLines) {
+      console.log("line: " + line);
+
+      if (line.length === 0) continue; // ignore empty message
+      if (line.startsWith(':')) continue; // ignore sse comment message
+      if (line === 'data: [DONE]') return; // 
+      
+      const json = JSON.parse(line.substring(6)); // start with "data: "
+      const content =
+        status === 200 ? json.choices[0].delta.content ?? "" : json.error.message;
+      appendLastMessageContent(content);
+    }
   }
-  const decodeText = decoder.decode(value);
-  const dataList = status === 200 ? decodeText.match(regex) : [decodeText];
-  dataList?.forEach((v: any) => {
-    const json = JSON.parse(v);
-    console.log(json);
-    const content =
-      status === 200 ? json.choices[0].delta.content ?? "" : json.error.message;
-    appendLastMessageContent(content);
-  });
-  await readStream(reader, status);
 };
 
 const appendLastMessageContent = (content: string) =>
