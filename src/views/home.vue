@@ -72,17 +72,20 @@ const readStream = async (
     if (done) break;
 
     const decodedText = decoder.decode(value, { stream: true });
-    console.log("decodedText:" + decodedText);
+    
+    if(status === 400){
+      const json = JSON.parse(decodedText); // start with "data: "
+      const content = json.error.message ?? decodedText;
+      appendLastMessageContent(content);
+      return;
+    }
 
     const chunk = partialLine + decodedText;
     const newLines = chunk.split(/\r?\n/);
 
     partialLine = newLines.pop() ?? '';
-    if(partialLine != '')console.log("partialLine:" + partialLine);
 
     for (const line of newLines) {
-      console.log("line: " + line);
-
       if (line.length === 0) continue; // ignore empty message
       if (line.startsWith(':')) continue; // ignore sse comment message
       if (line === 'data: [DONE]') return; // 
