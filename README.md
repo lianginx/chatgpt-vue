@@ -35,7 +35,7 @@ VITE v3.2.5  ready in 294 ms
 ➜  Network: use --host to expose
 ```
 
-按住 `Ctrl` 或 `command` 单机 Local 链接，在浏览器中打开项目，然后在页面底部输入框中填入您的 API Key，然后点击保存，即可开始使用！
+按住 `Ctrl` 或 `command` 点击 Local 链接，在浏览器中打开项目，然后在页面底部输入框中填入您的 API Key，然后点击保存，即可开始使用！
 
 如果想要更改 API Key，点击页面右上角 `设置`，重新输入并保存即可。
 
