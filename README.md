@@ -6,7 +6,7 @@
 
 ## 快速开始
 
-**注意：项目没有使用任何代理，API 在前端直接调用，能否连通基于你本机的网络情况！**
+>注意：本项目没有使用任何代理，API 在前端发送请求，能否连通基于你当前浏览器的所处的网络环境。如果你需要在服务端发送 API 请求的 ChatGPT，可以查看我的另一个项目 [chatgpt-nuxt](https://github.com/lianginx/chatgpt-nuxt)，点击这里 [在线体验](http://ai.in-x.cc/)。
 
 在开始之前，请确保您已正确安装 Node.js 运行时环境。如果您还没有安装 Node.js，请 [点击这里下载](https://nodejs.org/zh-cn/)。
 
