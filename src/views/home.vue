@@ -64,7 +64,7 @@ const readStream = async (
   reader: ReadableStreamDefaultReader<Uint8Array>,
   status: number
 ) => {
-  let partialLine = '';
+  let partialLine = "";
 
   while (true) {
     // eslint-disable-next-line no-await-in-loop
@@ -72,8 +72,8 @@ const readStream = async (
     if (done) break;
 
     const decodedText = decoder.decode(value, { stream: true });
-    
-    if(status === 400){
+
+    if (status !== 200) {
       const json = JSON.parse(decodedText); // start with "data: "
       const content = json.error.message ?? decodedText;
       appendLastMessageContent(content);
@@ -83,16 +83,18 @@ const readStream = async (
     const chunk = partialLine + decodedText;
     const newLines = chunk.split(/\r?\n/);
 
-    partialLine = newLines.pop() ?? '';
+    partialLine = newLines.pop() ?? "";
 
     for (const line of newLines) {
       if (line.length === 0) continue; // ignore empty message
-      if (line.startsWith(':')) continue; // ignore sse comment message
-      if (line === 'data: [DONE]') return; // 
-      
+      if (line.startsWith(":")) continue; // ignore sse comment message
+      if (line === "data: [DONE]") return; //
+
       const json = JSON.parse(line.substring(6)); // start with "data: "
       const content =
-        status === 200 ? json.choices[0].delta.content ?? "" : json.error.message;
+        status === 200
+          ? json.choices[0].delta.content ?? ""
+          : json.error.message;
       appendLastMessageContent(content);
     }
   }
@@ -182,11 +184,11 @@ watch(messageList.value, () => nextTick(() => scrollToBottom()));
           <Copy class="invisible group-hover:visible" :content="item.content" />
         </div>
         <div>
-          <pre
+          <div
             class="text-sm text-slate-600 whitespace-pre-wrap leading-relaxed"
             v-if="item.content"
-            >{{ item.content.replace(/^\n\n/, "") }}</pre
-          >
+            v-html="md.render(item.content.replace('\n\n', ''))"
+          ></div>
           <Loding v-else />
         </div>
       </div>
