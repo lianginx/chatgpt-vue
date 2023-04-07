@@ -17,12 +17,16 @@
   },
   "dependencies": {
     "@icon-park/vue-next": "^1.4.2",
+    "@tailwindcss/typography": "^0.5.9",
     "crypto-js": "^4.1.1",
+    "highlight.js": "^11.7.0",
+    "markdown-it": "^13.0.1",
     "vue": "^3.2.47",
     "vue-router": "^4.1.6"
   },
   "devDependencies": {
     "@types/crypto-js": "^4.1.1",
+    "@types/markdown-it": "^12.2.3",
     "@types/node": "^18.15.0",
     "@vitejs/plugin-vue": "^4.0.0",
     "@vue/tsconfig": "^0.1.3",

@@ -1,3 +1,60 @@
+<template>
+  <div class="flex flex-col h-screen">
+    <div
+      class="flex flex-nowrap fixed w-full items-baseline top-0 px-6 py-4 bg-gray-100"
+    >
+      <div class="text-2xl font-bold">ChatGPT</div>
+      <div class="ml-4 text-sm text-gray-500">
+        基于 OpenAI 的 ChatGPT 自然语言模型人工智能对话
+      </div>
+      <div
+        class="ml-auto px-3 py-2 text-sm cursor-pointer hover:bg-white rounded-md"
+        @click="clickConfig()"
+      >
+        设置
+      </div>
+    </div>
+
+    <div class="flex-1 mx-2 mt-20 mb-2" ref="chatListDom">
+      <div
+        class="group flex flex-col px-4 py-3 hover:bg-slate-100 rounded-lg"
+        v-for="item of messageList.filter((v) => v.role !== 'system')"
+      >
+        <div class="flex justify-between items-center mb-2">
+          <div class="font-bold">{{ roleAlias[item.role] }}：</div>
+          <Copy class="invisible group-hover:visible" :content="item.content" />
+        </div>
+        <div>
+          <div
+            class="prose text-sm text-slate-600 leading-relaxed"
+            v-if="item.content"
+            v-html="md.render(item.content)"
+          ></div>
+          <Loding v-else />
+        </div>
+      </div>
+    </div>
+
+    <div class="sticky bottom-0 w-full p-6 pb-8 bg-gray-100">
+      <div class="-mt-2 mb-2 text-sm text-gray-500" v-if="isConfig">
+        请输入 API Key：
+      </div>
+      <div class="flex">
+        <input
+          class="input"
+          :type="isConfig ? 'password' : 'text'"
+          :placeholder="isConfig ? 'sk-xxxxxxxxxx' : '请输入'"
+          v-model="messageContent"
+          @keydown.enter="isTalking || sendOrSave()"
+        />
+        <button class="btn" :disabled="isTalking" @click="sendOrSave()">
+          {{ isConfig ? "保存" : "发送" }}
+        </button>
+      </div>
+    </div>
+  </div>
+</template>
+
 <script setup lang="ts">
 import type { ChatMessage } from "@/types";
 import { ref, watch, nextTick, onMounted } from "vue";
@@ -5,6 +62,7 @@ import { chat } from "@/libs/gpt";
 import cryptoJS from "crypto-js";
 import Loding from "@/components/Loding.vue";
 import Copy from "@/components/Copy.vue";
+import { md } from "@/libs/markdown";
 
 let apiKey = "";
 let isConfig = ref(true);
@@ -156,63 +214,6 @@ const scrollToBottom = () => {
 
 watch(messageList.value, () => nextTick(() => scrollToBottom()));
 </script>
-
-<template>
-  <div class="flex flex-col h-screen">
-    <div
-      class="flex flex-nowrap fixed w-full items-baseline top-0 px-6 py-4 bg-gray-100"
-    >
-      <div class="text-2xl font-bold">ChatGPT</div>
-      <div class="ml-4 text-sm text-gray-500">
-        基于 OpenAI 的 ChatGPT 自然语言模型人工智能对话
-      </div>
-      <div
-        class="ml-auto px-3 py-2 text-sm cursor-pointer hover:bg-white rounded-md"
-        @click="clickConfig()"
-      >
-        设置
-      </div>
-    </div>
-
-    <div class="flex-1 mx-2 mt-20 mb-2" ref="chatListDom">
-      <div
-        class="group flex flex-col px-4 py-3 hover:bg-slate-100 rounded-lg"
-        v-for="item of messageList.filter((v) => v.role !== 'system')"
-      >
-        <div class="flex justify-between items-center mb-2">
-          <div class="font-bold">{{ roleAlias[item.role] }}：</div>
-          <Copy class="invisible group-hover:visible" :content="item.content" />
-        </div>
-        <div>
-          <div
-            class="text-sm text-slate-600 whitespace-pre-wrap leading-relaxed"
-            v-if="item.content"
-            v-html="md.render(item.content.replace('\n\n', ''))"
-          ></div>
-          <Loding v-else />
-        </div>
-      </div>
-    </div>
-
-    <div class="sticky bottom-0 w-full p-6 pb-8 bg-gray-100">
-      <div class="-mt-2 mb-2 text-sm text-gray-500" v-if="isConfig">
-        请输入 API Key：
-      </div>
-      <div class="flex">
-        <input
-          class="input"
-          :type="isConfig ? 'password' : 'text'"
-          :placeholder="isConfig ? 'sk-xxxxxxxxxx' : '请输入'"
-          v-model="messageContent"
-          @keydown.enter="isTalking || sendOrSave()"
-        />
-        <button class="btn" :disabled="isTalking" @click="sendOrSave()">
-          {{ isConfig ? "保存" : "发送" }}
-        </button>
-      </div>
-    </div>
-  </div>
-</template>
 
 <style scoped>
 pre {
